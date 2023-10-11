@@ -10,8 +10,11 @@ import {
   UpdateBanner,
   GetById,
   GetBannerWithId,
+  deleteStore
 } from "../app/controllers/Store.controller.js";
 
+
+router.delete("/delete", deleteStore)
 // create store
 router.post("/add", CreateStore);
 

@@ -32,6 +32,20 @@ export const CreateStore = async (req, res) => {
 };
 
 // update information of store
+export const deleteStore = async (req, res) =>{
+  const id = req.body;
+  try{
+    const store = await Store.findById({_id: id});
+    if (store){
+      const storedelete = await findByIdAndDelete({_id: id})
+      return res.status(200).json("da xoa thanh cong")
+    }else{
+      return res.status(400).json({error:"khong co cua hang"})
+    }
+  }catch(err) {
+    return res.status(500).json({err})
+  }
+}
 // COMPLETE
 export const UpdateStore = async (req, res) => {
   const responseType = {};
