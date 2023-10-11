@@ -98,6 +98,7 @@ const StaffSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Store",
     },
+    
     storeManager: {
       type: String,
       enum: ["manager", "staff"],

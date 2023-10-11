@@ -1,6 +1,6 @@
 import { Staff, DateSchedule, Slot } from "../models/Staff/Staff.model.js";
 import bcryptjs from "bcryptjs";
-
+import { Banner, Store } from "../models/Store/Store.model.js";
 // create information of Staff
 // COMPLETE in back-end
 export const CreateStaff = async (req, res) => {
@@ -110,12 +110,36 @@ export const GetStaffById = async (req, res) => {
 export const GetStaffs = async (req, res) => {
   const responseType = {};
   if (Staff) {
-    const staff = await Staff.find({ Name: { $ne: "Admin" } });
 
+    const staff = await Staff.find({ Name: { $ne: "Admin" } }).populate({
+      path: "store",
+    });
+    const data = staff.map((item) => {
+      const dataItem = {
+        _id: item._id,
+        Name: item.Name,
+        Telephone: item.Telephone,
+        Email: item.Email,
+        Password: item.Password,
+        Image: item.Image,
+        Number: item.Number,
+        Street: item.Street,
+        District: item.District,
+        City: item.City,
+        Active: item.Active,
+        Salary: item.Salary,
+        Gender: item.Gender,
+        store: item.store._id,
+        nameStore: item.store.Name_Store,
+      };
+      return dataItem;
+    });
+
+    console.log(data);
     responseType.statusText = "Success";
     responseType.message = "Get customer successfully";
     responseType.status = 200;
-    responseType.value = staff;
+    responseType.value = data;
   } else {
     responseType.statusText = "Error";
     responseType.message = "We have error in somewhere";
