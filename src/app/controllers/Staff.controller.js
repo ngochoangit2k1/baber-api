@@ -7,16 +7,16 @@ export const CreateStaff = async (req, res) => {
   const responseType = {};
   const input = req.body;
   //create new user
-  console.log('====================================');
+  console.log("====================================");
   console.log(input);
-  console.log('====================================');
+  console.log("====================================");
   try {
     const salt = bcryptjs.genSaltSync(10);
     const pass = await input.Password;
     const hashPassword = bcryptjs.hashSync(pass, salt);
-    console.log('====================================');
+    console.log("====================================");
     console.log(hashPassword);
-    console.log('====================================');
+    console.log("====================================");
     const newStaff = new Staff({
       Name: input.Name,
       Telephone: input.Telephone,
@@ -27,7 +27,6 @@ export const CreateStaff = async (req, res) => {
       store: input.storeId,
       storeManager: input.storeManager,
       isAdmin: false,
-
     });
     //save Customer in database and return response
     const save = await newStaff.save();
@@ -75,10 +74,16 @@ export const UpdateStaff = async (req, res) => {
 export const DeleteStaff = async (req, res) => {
   const responseType = {};
   try {
-    const staff = await Staff.findByIdAndDelete(req.params.id);
-    responseType.statusText = "Success";
-    responseType.message = "Delete Successfully";
-    responseType.status = 200;
+    const staff = await Staff.findById(req.params.id);
+
+    if (staff) {
+      await Staff.findByIdAndDelete(req.params.id);
+      responseType.statusText = "Success";
+      responseType.message = "Delete Successfully";
+      responseType.status = 200;
+    } else {
+      return res.status(400).json({ error: "khong co nhan vien" });
+    }
   } catch {
     responseType.statusText = "Failed";
     responseType.message = "Delete Failed";
@@ -110,7 +115,6 @@ export const GetStaffById = async (req, res) => {
 export const GetStaffs = async (req, res) => {
   const responseType = {};
   if (Staff) {
-
     const staff = await Staff.find({ Name: { $ne: "Admin" } }).populate({
       path: "store",
     });
@@ -150,12 +154,12 @@ export const GetStaffs = async (req, res) => {
 export const GetStaffByStore = async (req, res) => {
   const { staffId } = req.body;
   try {
-    const staff = await Staff.find({ store : staffId})
+    const staff = await Staff.find({ store: staffId });
     return res.status(200).json(staff);
   } catch (error) {
-    return res.status(404).json(error)
+    return res.status(404).json(error);
   }
-}
+};
 
 // count staff
 // COMPLETE in back-end
@@ -217,23 +221,22 @@ export const GetAllDate = async (req, res) => {
   res.json(responseType);
 };
 
-
 export const CreateStaffs = async (req, res) => {
   const responseType = {};
   const input = req.body;
-  
-  const storeId = req.user.data.store
+
+  const storeId = req.user.data.store;
   //create new user
-  console.log('====================================');
+  console.log("====================================");
   console.log(input);
-  console.log('====================================');
+  console.log("====================================");
   try {
     const salt = bcryptjs.genSaltSync(10);
     const pass = await input.Password;
     const hashPassword = bcryptjs.hashSync(pass, salt);
-    console.log('====================================');
+    console.log("====================================");
     console.log(hashPassword);
-    console.log('====================================');
+    console.log("====================================");
     const newStaff = new Staff({
       Name: input.Name,
       Telephone: input.Telephone,
@@ -244,7 +247,6 @@ export const CreateStaffs = async (req, res) => {
       store: storeId || input.storeId,
       storeManager: input.storeManager,
       isAdmin: false,
-
     });
     //save Customer in database and return response
     const save = await newStaff.save();

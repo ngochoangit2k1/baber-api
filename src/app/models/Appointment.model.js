@@ -43,6 +43,10 @@ const AppointmentSchema = new Schema(
     Services: {
       type: String,
     },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+    },
   },
   {
     timestamps: true,

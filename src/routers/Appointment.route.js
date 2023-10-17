@@ -15,6 +15,9 @@ import {
   GetAllAppointmentMatchPendingWithRangeTime,
   AppointmentPieChart,
   GetAppointmentForStaff,
+  UpdateApplicationStatus,
+  AppointmentAllByStoreId,
+   DeleteAppointmentByIdStore
 } from "../app/controllers/Appointment.controller.js";
 
 // get appointment with status cancel
@@ -59,4 +62,10 @@ router.get("/", GetAppointmentByUserId);
 // get appointment for staff
 router.post("/appointment-for-staff", GetAppointmentForStaff);
 
+// get appointment by storeId
+router.get("/get-booking-by-store", AppointmentAllByStoreId)
+//
+router.put("/updateBooking", UpdateApplicationStatus)
+
+router.delete("/delete-booking", DeleteAppointmentByIdStore)
 export default router;

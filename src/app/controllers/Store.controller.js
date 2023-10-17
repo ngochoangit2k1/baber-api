@@ -49,7 +49,7 @@ export const deleteStore = async (req, res) =>{
 // COMPLETE
 export const UpdateStore = async (req, res) => {
   const responseType = {};
-  const id = req.body;
+  const {id}= req.body;
   try {
     const store = await Store.findByIdAndUpdate(
       { _id: id },

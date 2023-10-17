@@ -5,6 +5,8 @@ import {
   Slot,
   DateSchedule,
 } from "../models/Staff/Staff.model.js";
+import { Banner, Store } from "../models/Store/Store.model.js";
+
 import { Service } from "../models/Service/Service.model.js";
 import nodemailer from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
@@ -181,39 +183,48 @@ export const AddAppointment = async (req, res) => {
   const email = req.body.Email;
   const status = "pending";
   const manyService = req.body.Services;
+  const storeId = req.body.StoreId;
+  const store = await Store.findById(storeId);
 
-  Staff.findOne({ _id: staffId }).then((staff) => {
-    const date = staff.Dates.id(dateId);
-    const slot = date.slots.id(slotId);
-    slot.isBooked = true;
-    staff.save().then(() => {
-      // create an entry in the appointment database
-      const newAppointment = new Appointment({
-        StaffId: staffId,
-        DateId: dateId,
-        SlotId: slotId,
-        CustomerId: customerId,
-        date: date.date,
-        slotTime: slot.Time,
-        Staff: staff.Name,
-        NameCustomer: customerName,
-        TelephoneCustomer: customerTelephone,
-        Email: email,
-        Services: manyService,
-        Status: status,
-      });
-      newAppointment
-        .save()
-        .then((appointment) => {
-          return res.status(200).json(appointment);
-        })
-
-        .catch((err) => {
-          console.log(err);
-          res.status(400).json(err);
+  if (store) {
+    Staff.findOne({ _id: staffId }).then((staff) => {
+      const date = staff.Dates.id(dateId);
+      const slot = date.slots.id(slotId);
+      slot.isBooked = true;
+      staff.save().then(() => {
+        // create an entry in the appointment database
+        const newAppointment = new Appointment({
+          StaffId: staffId,
+          DateId: dateId,
+          SlotId: slotId,
+          CustomerId: customerId,
+          date: date.date,
+          slotTime: slot.Time,
+          Staff: staff.Name,
+          NameCustomer: customerName,
+          TelephoneCustomer: customerTelephone,
+          Email: email,
+          Services: manyService,
+          Status: status,
+          store: storeId,
+          nameStore: store.Name_Store
         });
+        newAppointment
+          .save()
+          .then((appointment) => {
+            return res.status(200).json(appointment);
+          })
+
+          .catch((err) => {
+            console.log(err);
+            res.status(400).json(err);
+          });
+      });
     });
-  });
+  } else {
+    return res.status(404).json({ error: "khong tim thay cua hang" });
+  }
+
   // const GOOGLE_MAILER_CLIENT_ID = process.env.CLIENT_ID_CONTACT;
   // const GOOGLE_MAILER_CLIENT_SECRET = process.env.CLIENT_SECRET_CONTACT;
   // const GOOGLE_MAILER_REFRESH_TOKEN = process.env.REFRESH_TOKEN_ADMIN;
@@ -381,7 +392,8 @@ export const GetAppointmentById = async (req, res) => {
     const appointmentId = req.params.id;
     const appointment = await Appointment.findOne({
       _id: appointmentId,
-    });
+    }).populate("store", "Name_Store");
+
     responseType.message = "Get appointment successfully";
     responseType.status = 200;
     responseType.value = appointment;
@@ -576,4 +588,60 @@ export const GetAppointmentForStaff = async (req, res) => {
     responseType.status = 500;
   }
   res.json(responseType);
+};
+
+export const AppointmentAllByStoreId = async (req, res) => {
+  const { storeId } = req.query;
+  try {
+    const store = await Store.findById(storeId);
+    if (store) {
+      const appointment = await Appointment.find({ store: storeId });
+
+      return res.status(200).json(appointment);
+    } else {
+      return res.status(400).json({ message: "Store not found" });
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error });
+  }
+};
+
+export const DeleteAppointmentByIdStore = async (req, res, next) => {
+  const { id, storeId } = req.body;
+  try {
+    const store = await Store.findById({ _id: storeId });
+    const appointment = await Appointment.findById({ _id: id });
+    if (store) {
+      next;
+    } else {
+      res.status(400).json({ error: "khong tim thay store" });
+    }
+    if (appointment) {
+      await Appointment.deleteById({ _id: id });
+      return res.status(200).json({ message: "da xoa thanh cong" });
+    } else {
+      return res.status(400).json({ error: "Không tìm thấy đặt hàng" });
+    }
+  } catch (error) {}
+};
+
+export const UpdateApplicationStatus = async (req, res) => {
+  const { id } = req.query;
+
+  try {
+    const application = await Appointment.findById(id);
+
+    if (application) {
+      const applicationUpdate = await application.findByIdAndUpdate(
+        { _id: id },
+        { Status: "cancel" }
+      );
+
+      return res.status(200).json(applicationUpdate);
+    } else {
+      return res.status(404).json({ error: "khong tim thay don" });
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error });
+  }
 };
