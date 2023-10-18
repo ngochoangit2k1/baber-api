@@ -596,9 +596,33 @@ export const AllByStoreId = async (req, res) => {
     const store = await Store.findOne({_id:storeId});
     console.log("check",store);
     if (store) {
-      const appointment = await Appointment.find({ store: storeId });
+      const appointment = await Appointment.find({ store: storeId }).populate({path: 'Services'}).populate({
+        path: 'store', // Chỉ định đường dẫn đến bảng cha "store"
+         // Chỉ định trường "name" từ bảng cha "store"
+      });
       if (appointment) {
-        return res.status(200).json(appointment);
+        const data = appointment.map((item) => {
+          const dataItem = {
+            _id: item._id,
+            StaffId: item.StaffId,
+            DateId: item.DateId,
+            SlotId: item.SlotId,
+            CustomerId: item.CustomerId,
+            Staff: item.Staff,
+            NameCustomer: item.NameCustomer,
+            TelephoneCustomer: item.TelephoneCustomer,
+            Email: item.Email,
+            date: item.date,
+            slotTime: item.slotTime,
+            Status: item.Status,
+            Services: item.Services._id,
+            Name_Service: item.Services.Name_Service,
+            Price: item.Services.Price,
+            Name_Store: item.store.Name_Store
+          };
+          return dataItem;
+        });
+        return res.status(200).json(data);
       } else {
         return res.status(404).json("cua hang chua co dat hang");
       }
