@@ -624,8 +624,8 @@ export const DeleteAppointmentByIdStore = async (req, res, next) => {
       await Appointment.deleteById({ _id: id });
       return res.status(200).json({ message: "da xoa thanh cong" });
     } else {
-      return res.status(400).json({ error: "Không tìm thấy đặt hàng" });
-    }
+      return res.status(400).json({ error: "Không tìm thấy đặt    hàng" });
+    }        
   } catch (error) {}
 };
 
