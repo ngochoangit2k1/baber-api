@@ -16,8 +16,8 @@ import {
   AppointmentPieChart,
   GetAppointmentForStaff,
   UpdateApplicationStatus,
-  AppointmentAllByStoreId,
-   DeleteAppointmentByIdStore
+  AllByStoreId,
+  DeleteAppointmentByIdStore,
 } from "../app/controllers/Appointment.controller.js";
 
 // get appointment with status cancel
@@ -63,9 +63,9 @@ router.get("/", GetAppointmentByUserId);
 router.post("/appointment-for-staff", GetAppointmentForStaff);
 
 // get appointment by storeId
-router.get("/get-booking-by-store", AppointmentAllByStoreId)
+router.get("/get-booking-by-store", AllByStoreId);
 //
-router.put("/updateBooking", UpdateApplicationStatus)
+router.put("/updateBooking", UpdateApplicationStatus);
 
-router.delete("/delete-booking", DeleteAppointmentByIdStore)
+router.delete("/delete-booking", DeleteAppointmentByIdStore);
 export default router;

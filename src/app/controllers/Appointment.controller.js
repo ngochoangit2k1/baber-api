@@ -207,7 +207,7 @@ export const AddAppointment = async (req, res) => {
           Services: manyService,
           Status: status,
           store: storeId,
-          nameStore: store.Name_Store
+          nameStore: store.Name_Store,
         });
         newAppointment
           .save()
@@ -590,14 +590,18 @@ export const GetAppointmentForStaff = async (req, res) => {
   res.json(responseType);
 };
 
-export const AppointmentAllByStoreId = async (req, res) => {
-  const { storeId } = req.query;
+export const AllByStoreId = async (req, res) => {
+  const { storeId } = req.body;
   try {
-    const store = await Store.findById(storeId);
+    const store = await Store.findOne({_id:storeId});
+    console.log("check",store);
     if (store) {
       const appointment = await Appointment.find({ store: storeId });
-
-      return res.status(200).json(appointment);
+      if (appointment) {
+        return res.status(200).json(appointment);
+      } else {
+        return res.status(404).json("cua hang chua co dat hang");
+      }
     } else {
       return res.status(400).json({ message: "Store not found" });
     }
