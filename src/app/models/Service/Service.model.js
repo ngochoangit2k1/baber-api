@@ -16,6 +16,10 @@ const EvaluateSchema = new Schema(
     Customer_id: {
       type: String,
     },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+    },
     Star: {
       type: Number,
       default: 0,
@@ -47,6 +51,10 @@ const ServiceSchema = new Schema(
     },
     Category: {
       type: String,
+    },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
     },
     Evaluate: [],
   },

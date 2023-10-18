@@ -1,4 +1,5 @@
 import { Category, Service } from "../models/Service/Service.model.js";
+import { Store } from "../models/Store/Store.model.js";
 
 // create information of Service
 //COMPLETE
@@ -14,6 +15,7 @@ export const CreateService = async (req, res) => {
       Description: input.Description,
       Image: input.Image,
       Category: nameCategory,
+      store: input.idStore,
     });
     //insert id Service in to Category with name
     const save = await newService.save();
@@ -217,4 +219,35 @@ export const GetRandomServices = async (req, res) => {
     responseType.status = 404;
   }
   res.json(responseType);
+};
+
+export const UpdateServiceByStore = async (req, res) => {
+  const { storeId,  serviceId} = req.body;
+  try {
+    const update = await Service.updateMany({_id:serviceId},{$set: {store: storeId}});
+    console.log(update)
+    return res.json("update")
+  } catch (error) {
+    return res.status(400).json({error: error})
+  }
+};
+
+export const AllByServiceId = async (req, res) => {
+  const { storeId } = req.body;
+  try {
+    const store = await Store.findOne({_id:storeId});
+console.log(store)
+    if (store) {
+      const service = await Service.find({store:storeId});
+      if (service) {
+        return res.status(200).json(service);
+      } else {
+        return res.status(404).json("cua hang chua co dat hang");
+      }
+    } else {
+      return res.status(400).json({ message: "Store not found" });
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error });
+  }
 };

@@ -11,6 +11,8 @@ import {
   GetServicesByName,
   GetRandomServices,
   GetServicesLimit4,
+  UpdateServiceByStore,
+  AllByServiceId
 } from "../app/controllers/Service.controller.js";
 
 // create Service
@@ -31,6 +33,7 @@ router.get("/category/", GetServicesByCategoryName);
 // get Service by id
 router.get("/", GetServiceById);
 
+router.put("/updateService",UpdateServiceByStore )
 //get limit 3
 router.get("/limit", GetServicesLimit);
 
@@ -43,4 +46,5 @@ router.post("/name", GetServicesByName);
 // get random 5 services
 router.get("/random", GetRandomServices);
 
+router.post("/get-all", AllByServiceId)
 export default router;
