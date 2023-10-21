@@ -65,7 +65,7 @@ router.post("/appointment-for-staff", GetAppointmentForStaff);
 // get appointment by storeId
 router.post("/get-booking-by-store", AllByStoreId);
 //
-router.put("/updateBooking", UpdateApplicationStatus);
+router.put("/update-booking", UpdateApplicationStatus);
 
 router.delete("/delete-booking", DeleteAppointmentByIdStore);
 export default router;

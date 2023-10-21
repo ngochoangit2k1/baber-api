@@ -184,8 +184,8 @@ export const AddAppointment = async (req, res) => {
   const status = "pending";
   const manyService = req.body.Services;
   const storeId = req.body.storeId;
-  const store = await Store.findOne({_id: storeId});
-console.log(store)
+  const store = await Store.findOne({ _id: storeId });
+  console.log(store);
   if (store) {
     Staff.findOne({ _id: staffId }).then((staff) => {
       const date = staff.Dates.id(dateId);
@@ -593,13 +593,15 @@ export const GetAppointmentForStaff = async (req, res) => {
 export const AllByStoreId = async (req, res) => {
   const { storeId } = req.body;
   try {
-    const store = await Store.findOne({_id:storeId});
-    console.log("check",store);
+    const store = await Store.findOne({ _id: storeId });
+    console.log("check", store);
     if (store) {
-      const appointment = await Appointment.find({ store: storeId }).populate({
-        path: 'store', // Chỉ định đường dẫn đến bảng cha "store"
-         // Chỉ định trường "name" từ bảng cha "store"
-      }).populate({path:'Services'});
+      const appointment = await Appointment.find({ store: storeId })
+        .populate({
+          path: "store", // Chỉ định đường dẫn đến bảng cha "store"
+          // Chỉ định trường "name" từ bảng cha "store"
+        })
+        .populate({ path: "Services" });
       if (appointment) {
         const data = appointment.map((item) => {
           const dataItem = {
@@ -618,7 +620,7 @@ export const AllByStoreId = async (req, res) => {
             Services: item.Services._id,
             Name_Service: item.Services.Name_Service,
             Price: item.Services.Price,
-            Name_Store: item.store.Name_Store
+            Name_Store: item.store.Name_Store,
           };
           return dataItem;
         });
@@ -635,21 +637,22 @@ export const AllByStoreId = async (req, res) => {
 };
 
 export const DeleteAppointmentByIdStore = async (req, res, next) => {
-  const { id, storeId } = req.query;
+  const { id } = req.query;
   try {
-    const store = await Store.findById({ _id: storeId });
+    // const store = await Store.findById({ _id: storeId });
     const appointment = await Appointment.findById({ _id: id });
+    console.log(appointment);
     // if (store) {
     //   next;
     // } else {
     //   res.status(400).json({ error: "khong tim thay store" });
     // }
     if (appointment) {
-      await Appointment.deleteById({ _id: id });
+      await Appointment.deleteOne({ _id: id });
       return res.status(200).json({ message: "da xoa thanh cong" });
     } else {
-      return res.status(400).json({ error: "Không tìm thấy đặt    hàng" });
-    }        
+      return res.status(400).json({ error: "Không tìm thấy booking" });
+    }
   } catch (error) {}
 };
 
@@ -657,15 +660,12 @@ export const UpdateApplicationStatus = async (req, res) => {
   const { id } = req.query;
 
   try {
-    const application = await Appointment.findById(id);
-
+    const application = await Appointment.findOne({_id: id});
+    console.log(application);
     if (application) {
-      const applicationUpdate = await application.findByIdAndUpdate(
-        { _id: id },
-        { Status: "cancel" }
-      );
+      await Appointment.updateOne({ _id: id }, { Status: "cancel" });
 
-      return res.status(200).json(applicationUpdate);
+      return res.status(200).json("thanh cong");
     } else {
       return res.status(404).json({ error: "khong tim thay don" });
     }
