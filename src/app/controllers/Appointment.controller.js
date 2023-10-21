@@ -635,7 +635,7 @@ export const AllByStoreId = async (req, res) => {
 };
 
 export const DeleteAppointmentByIdStore = async (req, res, next) => {
-  const { id, storeId } = req.body;
+  const { id, storeId } = req.query;
   try {
     const store = await Store.findById({ _id: storeId });
     const appointment = await Appointment.findById({ _id: id });
