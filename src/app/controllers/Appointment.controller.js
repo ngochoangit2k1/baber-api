@@ -663,7 +663,7 @@ export const UpdateApplicationStatus = async (req, res) => {
     const application = await Appointment.findOne({_id: id});
     console.log(application);
     if (application) {
-      await Appointment.updateOne({ _id: id }, { Status: "cancel" });
+      await Appointment.updateOne({ _id: id }, { Status: "Done" });
 
       return res.status(200).json("thanh cong");
     } else {
