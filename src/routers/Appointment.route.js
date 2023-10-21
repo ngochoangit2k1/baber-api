@@ -63,7 +63,7 @@ router.get("/", GetAppointmentByUserId);
 router.post("/appointment-for-staff", GetAppointmentForStaff);
 
 // get appointment by storeId
-router.get("/get-booking-by-store", AllByStoreId);
+router.post("/get-booking-by-store", AllByStoreId);
 //
 router.put("/updateBooking", UpdateApplicationStatus);
 

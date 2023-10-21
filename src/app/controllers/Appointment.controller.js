@@ -183,9 +183,9 @@ export const AddAppointment = async (req, res) => {
   const email = req.body.Email;
   const status = "pending";
   const manyService = req.body.Services;
-  const storeId = req.body.StoreId;
-  const store = await Store.findById(storeId);
-
+  const storeId = req.body.storeId;
+  const store = await Store.findOne({_id: storeId});
+console.log(store)
   if (store) {
     Staff.findOne({ _id: staffId }).then((staff) => {
       const date = staff.Dates.id(dateId);
@@ -596,10 +596,10 @@ export const AllByStoreId = async (req, res) => {
     const store = await Store.findOne({_id:storeId});
     console.log("check",store);
     if (store) {
-      const appointment = await Appointment.find({ store: storeId }).populate({path: 'Services'}).populate({
+      const appointment = await Appointment.find({ store: storeId }).populate({
         path: 'store', // Chỉ định đường dẫn đến bảng cha "store"
          // Chỉ định trường "name" từ bảng cha "store"
-      });
+      }).populate({path:'Services'});
       if (appointment) {
         const data = appointment.map((item) => {
           const dataItem = {
@@ -639,11 +639,11 @@ export const DeleteAppointmentByIdStore = async (req, res, next) => {
   try {
     const store = await Store.findById({ _id: storeId });
     const appointment = await Appointment.findById({ _id: id });
-    if (store) {
-      next;
-    } else {
-      res.status(400).json({ error: "khong tim thay store" });
-    }
+    // if (store) {
+    //   next;
+    // } else {
+    //   res.status(400).json({ error: "khong tim thay store" });
+    // }
     if (appointment) {
       await Appointment.deleteById({ _id: id });
       return res.status(200).json({ message: "da xoa thanh cong" });
