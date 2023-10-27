@@ -172,9 +172,7 @@ export const GetByDateChoose = async (req, res) => {
   }
 };
 
-async function sendMail({ templateName, params, store, service }) {
-  console.log("tới", params.Email);
-  console.log(store);
+async function sendMail({ templateName, params, service ,store}) {  
 
   try {
     const transporter = nodemailer.createTransport({
@@ -264,7 +262,6 @@ export const AddAppointment = async (req, res) => {
   const storeId = req.body.storeId;
   const store = await Store.findOne({ _id: storeId });
   const service = await Service.findOne({ _id: manyService });
-  console.log(store);
   if (store) {
     Staff.findOne({ _id: staffId }).then((staff) => {
       const date = staff.Dates.id(dateId);
@@ -293,9 +290,9 @@ export const AddAppointment = async (req, res) => {
           .then(async (appointment) => {
             console.log("first", appointment);
             await sendMail({
-              params: req.body,
-              store: store,
-              service: service,
+              params:appointment,
+              service:service,
+              store:store
             });
             return res.status(200).json({ message: "success" });
           })
