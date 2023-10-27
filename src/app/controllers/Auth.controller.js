@@ -1,7 +1,7 @@
 import { Customer } from "../models/Customer/Customer.model.js";
 import { Staff } from "../models/Staff/Staff.model.js";
 import OTP from "../models/OTP.model.js";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
@@ -83,46 +83,60 @@ export const RegisterForCustomer = async (req, res) => {
 // Login for customer have account
 
 export const LoginForCustomer = async (req, res) => {
-  const responseType = {};
-  if (!req.body.token) {
-    responseType.message = "reCaptcha token is missing";
-    responseType.status = 400;
-  }
   try {
-    const googleVerifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${req.body.token}`;
-    const response = await axios.post(googleVerifyUrl);
-    const { success } = response.data;
-    if (success) {
-      const user = await Customer.findOne({
-        Email: req.body.Email,
-      });
-      if (!user) {
-        responseType.status = 300;
-        responseType.message = "Email was wrong!";
-      }
+    // await loginValidator(req.body, res);
 
-      try {
-        const match = bcryptjs.compare(req.body.Password, user.Password);
-        if (!match) {
-          responseType.status = 301;
-          responseType.message = "Password not match!";
-        } else {
-          responseType.status = 200;
-          responseType.message = "Login Successfully";
-          responseType.value = user;
-        }
-      } catch (err) {
-        console.log(err);
-      }
+    const { Email, Password } = req.body;
+
+    if (!Email || Email.length === 0 || !Password || Password.length === 0) {
+      return res.status(400).json({
+        name: "credential",
+        code: 400,
+        message: "EMAIL OR PASSWORD INVALID",
+      });
+    }
+
+    const user = await Customer.findOne({
+      Email: Email
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        name: "credential",
+        code: 400,
+        message: "EMAIL NOT FOUND",
+      });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(Password, user.Password);
+
+    if (isPasswordMatch) {
+      const token = jwt.sign(
+        { data: user },
+        process.env.JWT,
+        { expiresIn: "10 days" }
+      );
+
+      const userJson = { ...user.toJSON() };
+  
+
+      return res.status(200).json({
+        user: userJson,
+        token: token,
+      });
     } else {
-      responseType.message = "reCaptcha is invalid";
+      return res.status(400).json({
+        name: "credential",
+        code:400,
+        message: "Wrong password",
+      });
     }
   } catch (error) {
-    responseType.message = "reCaptcha is error";
-    responseType.status = 400;
+    console.error("Error:", error);
+    return res.status(400).json({
+      error: "An error occurred while processing the request.",
+    });
   }
-
-  res.json(responseType);
 };
 
 export const changePasswordWithOldPassword = async (req, res) => {
@@ -266,42 +280,60 @@ export const SendEmail = async (req, res) => {
 
 // Login for staff
 export const LoginForStaff = async (req, res) => {
-  const responseType = {};
-
   try {
+    // await loginValidator(req.body, res);
+
+    const { Email, Password } = req.body;
+
+    if (!Email || Email.length === 0 || !Password || Password.length === 0) {
+      return res.status(HTTP_ERROR.BAD_REQUEST).json({
+        name: "credential",
+        code: 400,
+        message: "EMAIL OR PASSWORD INVALID",
+      });
+    }
+
     const user = await Staff.findOne({
-      Email: req.body.Email,
+      Email: Email
     });
 
     if (!user) {
-      responseType.status = 300;
-      responseType.message = "Email is wrong!";
+      return res.status(HTTP_ERROR.BAD_REQUEST).json({
+        name: "credential",
+        code: 400,
+        message: "EMAIL NOT FOUND",
+      });
     }
 
-    const match = bcryptjs.compare(req.body.Password, user.Password);
-    if (!match) {
-      responseType.status = 301;
-      responseType.message = "Password not match!";
-    } else {
-      responseType.status = 200;
-      responseType.message = "Login Successfully";
-      responseType.value  = user
-      let token = jwt.sign(
+    const isPasswordMatch = await bcrypt.compare(Password, user.Password);
+
+    if (isPasswordMatch) {
+      const token = jwt.sign(
         { data: user },
-        process.env.SECRET_KEY,
-        { expiresIn: "10 days" } //thời gian tồn tại của token
+        process.env.JWT,
+        { expiresIn: "10 days" }
       );
-      console.log(token)
-      responseType.token = token;
-    }  
+
+      const userJson = { ...user.toJSON() };
+  
+
+      return res.status(200).json({
+        user: userJson,
+        token: token,
+      });
+    } else {
+      return res.status(400).json({
+        name: "credential",
+        code:400,
+        message: "Wrong password",
+      });
+    }
   } catch (error) {
-    console.log("====================================");
-    console.log(error);
-    console.log("====================================");
-    responseType.message = "reCaptcha is error";
-    responseType.status = 400;
+    console.error("Error:", error);
+    return res.status(400).json({
+      error: "An error occurred while processing the request.",
+    });
   }
-  return res.status(200).json(responseType)
 };
 
 // change password for staff

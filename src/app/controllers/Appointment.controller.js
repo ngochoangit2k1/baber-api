@@ -171,7 +171,81 @@ export const GetByDateChoose = async (req, res) => {
     res.status(400).json(err);
   }
 };
+async function sendMail({ templateName, params }) {
+  console.log("tới", params.EMAIL);
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: "Barber.noreply <Barber@Barber.com>",
+      replyTo: "Barber@SanFont.com",
+      to: params.EMAIL,
+      subject: "Đơn đặt từ Barber",
+      html: `<div className="order-summary text-center">
+      <div>
+        <h3>THANK YOU</h3>
+        <p>Đơn đặt hàng của bạn đã hoàn tất.</p>
+      </div>
+      <div>
+        ORDER:&nbsp;
+        <span className="orderid highlight">${params.DateId}</span>
+      </div>
+      <div>Chúng tôi đã xác nhận đơn hàng của bạn.</div>
+      <div>
+        Nếu có bất kỳ thắc mắc về đơn hàng của bạn, vui lòng liên hệ
+        với chúng tôi hoặc dùng chức năng theo dõi đơn hàng
+      </div>
+    </div>`,
+    };
 
+    // eslint-disable-next-line func-names
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+    return { message: "Success" };
+  } catch (e) {
+    throw e;
+  }
+}
+
+// async..await is not allowed in global scope, must use a wrapper
+async function main() {
+  // send mail with defined transport object
+  const info = await transporter.sendMail({
+    from: '"Fred Foo 👻" <foo@example.com>', // sender address
+    to: "bar@example.com, baz@example.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: ` <div className="order-summary text-center">
+    <div>
+      <h3>THANK YOU</h3>
+      <p>Đơn đặt hàng của bạn đã hoàn tất.</p>
+    </div>
+    <div>
+      ORDER:&nbsp;
+      <span className="orderid highlight">{{ orderCode }}</span>
+    </div>
+    <div>Chúng tôi đã xác nhận đơn hàng của bạn.</div>
+    <div>
+      Nếu có bất kỳ thắc mắc về đơn hàng của bạn, vui lòng liên hệ
+      với chúng tôi hoặc dùng chức năng theo dõi đơn hàng
+    </div>
+  </div>`, // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+
+  //
+}
 // add new appointment
 export const AddAppointment = async (req, res) => {
   const staffId = req.body.StaffId; // staff id
@@ -211,7 +285,11 @@ export const AddAppointment = async (req, res) => {
         });
         newAppointment
           .save()
-          .then((appointment) => {
+          .then( async (appointment) => {
+            await sendMail({
+              params:  req.body,
+              
+            })
             return res.status(200).json(appointment);
           })
 
@@ -225,44 +303,7 @@ export const AddAppointment = async (req, res) => {
     return res.status(404).json({ error: "khong tim thay cua hang" });
   }
 
-  // const GOOGLE_MAILER_CLIENT_ID = process.env.CLIENT_ID_CONTACT;
-  // const GOOGLE_MAILER_CLIENT_SECRET = process.env.CLIENT_SECRET_CONTACT;
-  // const GOOGLE_MAILER_REFRESH_TOKEN = process.env.REFRESH_TOKEN_ADMIN;
-  // const ADMIN_EMAIL_ADDRESS = process.env.EMAIL_ADMIN;
-
-  // const myOAuth2Client = new OAuth2Client(
-  //   GOOGLE_MAILER_CLIENT_ID,
-  //   GOOGLE_MAILER_CLIENT_SECRET
-  // );
-  // // Set Refresh Token vào OAuth2Client Credentials
-  // myOAuth2Client.setCredentials({
-  //   refresh_token: GOOGLE_MAILER_REFRESH_TOKEN,
-  // });
-
-  // const myAccessTokenObject = await myOAuth2Client.getAccessToken();
-  // const myAccessToken = myAccessTokenObject?.token;
-
-  // // Tạo một biến Transport từ Nodemailer với đầy đủ cấu hình, dùng để gọi hành động gửi mail
-  // const transport = nodemailer.createTransport({
-  //   service: "gmail",
-  //   auth: {
-  //     type: "OAuth2",
-  //     user: ADMIN_EMAIL_ADDRESS,
-  //     clientId: GOOGLE_MAILER_CLIENT_ID,
-  //     clientSecret: GOOGLE_MAILER_CLIENT_SECRET,
-  //     refresh_token: GOOGLE_MAILER_REFRESH_TOKEN,
-  //     accessToken: myAccessToken,
-  //   },
-  // });
-  // const mailOptions = {
-  //   to: email, // Gửi đến ai?
-  //   subject: "BARBERJT HAIRCUT APPOINTMENTS", // Tiêu đề email
-  //   html: `<h3> You have successfully booked an appointment at BarberJT </h3> <br>
-  //    <p> Please arrive at the store on time.
-  //     Please check your appointment information at your personal account information </p>  <br>
-  //    <b> Thank you for trusting our services</b>`, // Nội dung email
-  // };
-  // await transport.sendMail(mailOptions);
+ 
 };
 
 // update information of Appointment
@@ -660,7 +701,7 @@ export const UpdateApplicationStatus = async (req, res) => {
   const { id } = req.query;
 
   try {
-    const application = await Appointment.findOne({_id: id});
+    const application = await Appointment.findOne({ _id: id });
     console.log(application);
     if (application) {
       await Appointment.updateOne({ _id: id }, { Status: "Done" });

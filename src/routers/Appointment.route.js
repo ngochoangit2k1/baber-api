@@ -19,7 +19,7 @@ import {
   AllByStoreId,
   DeleteAppointmentByIdStore,
 } from "../app/controllers/Appointment.controller.js";
-
+import {GetByYear} from "../app/controllers/Revenue.controller.js"
 // get appointment with status cancel
 router.get("/cancel", GetAppointmentMatchCancel);
 
@@ -68,4 +68,6 @@ router.post("/get-booking-by-store", AllByStoreId);
 router.put("/update-booking", UpdateApplicationStatus);
 
 router.delete("/delete-booking", DeleteAppointmentByIdStore);
+
+router.get("/get-revenue", GetByYear)
 export default router;

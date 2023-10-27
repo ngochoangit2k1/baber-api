@@ -3,6 +3,7 @@ import { Service } from "../models/Service/Service.model.js";
 import { Customer } from "../models/Customer/Customer.model.js";
 import bcryptjs from "bcryptjs";
 import moment from "moment";
+import Appointment from "../models/Appointment.model.js";
 
 // create information of Receipt
 export const CreateReceipt = async (req, res) => {
@@ -332,18 +333,38 @@ export const GetByYear = async (req, res) => {
   const responseType = {};
   // const date = req.body.Date;
   try {
-    const getByYear = await Receipt.aggregate([
+    const getByYear = await Appointment.aggregate([
       {
-        $group: {
-          _id: { $dateToString: { format: "%Y", date: "$createdAt" } },
-          totalAmount: { $sum: "$Total" },
-          count: { $sum: 1 },
+        $match: {
+          Status:"Done"
         },
       },
+      {
+        $lookup: {
+          from: "services", // Tên của bảng dịch vụ
+          localField: "Services", // Trường trong bảng Receipt tham chiếu đến dịch vụ
+          foreignField:  "_id", // Trường trong bảng Service tham chiếu đến dịch vụ
+          as: "serviceInfo" // Tên của trường kết quả
+        }
+      },
+      {
+        $unwind: "$serviceInfo" // Mở rộng trường "serviceInfo"
+      },
+      {
+        $group: {
+          _id: "$_id", // Điều kiện duy nhất
+          totalServicePrice: { $sum: "$serviceInfo.Price" },
+          // Tính tổng giá tiền dịch vụ
+          // Thêm các trường khác bạn muốn nhóm (nếu cần)
+        }
+      }
+      
     ]);
+    const totalAmountSum = getByYear.reduce((total, item) => total + item.totalServicePrice, 0);
+
     responseType.message = "Get receipt successfully";
     responseType.status = 200;
-    responseType.value = getByYear;
+    responseType.value = totalAmountSum;
   } catch (err) {
     responseType.statusText = "Error";
     responseType.message = "We have error ";
