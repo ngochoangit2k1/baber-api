@@ -171,8 +171,11 @@ export const GetByDateChoose = async (req, res) => {
     res.status(400).json(err);
   }
 };
-async function sendMail({ templateName, params }) {
-  console.log("tới", params.EMAIL);
+
+async function sendMail({ templateName, params, store, service }) {
+  console.log("tới", params.Email);
+  console.log(store);
+
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -184,21 +187,49 @@ async function sendMail({ templateName, params }) {
     const mailOptions = {
       from: "Barber.noreply <Barber@Barber.com>",
       replyTo: "Barber@SanFont.com",
-      to: params.EMAIL,
-      subject: "Đơn đặt từ Barber",
+      to: params.Email,
+      subject: "Booking schedule from the barber shopr",
       html: `<div className="order-summary text-center">
       <div>
         <h3>THANK YOU</h3>
-        <p>Đơn đặt hàng của bạn đã hoàn tất.</p>
+        <p>You have successfully booked your seat.</p>
       </div>
-      <div>
-        ORDER:&nbsp;
-        <span className="orderid highlight">${params.DateId}</span>
+      <div style="margin-left:20px">
+      Date:&nbsp;
+      <span className="orderid highlight">${params.date}</span>
+    </div>
+      <div style="margin-left:20px">
+        Time:&nbsp;
+        <span className="orderid highlight">${params.slotTime}</span>
       </div>
-      <div>Chúng tôi đã xác nhận đơn hàng của bạn.</div>
+      <div style="margin-left:20px">
+        Store name:&nbsp;
+        <span className="orderid highlight">${store.Name_Store}</span>
+      </div>
+      <div style="margin-left:20px">
+      Staff:&nbsp;
+      <span className="orderid highlight">${params.Staff}</span>
+    </div>
+    <div style="margin-left:20px">
+    Name Service:&nbsp;
+    <span className="orderid highlight">${service.Name_Service}</span>
+  </div>
+  <div style="margin-left:20px">
+    Name Service:&nbsp;
+    <span className="orderid highlight">${service.Description}</span>
+  </div>
+  <div style="margin-left:20px">
+  Price:&nbsp;
+    <span className="orderid highlight">${service.Price}</span>
+  </div>
+  
       <div>
-        Nếu có bất kỳ thắc mắc về đơn hàng của bạn, vui lòng liên hệ
-        với chúng tôi hoặc dùng chức năng theo dõi đơn hàng
+
+      We have successfully confirmed your reservation.</div>
+      <div>
+
+      If you have any questions about your booking, please get in touch
+      Contact us via phone number: 039xxx9xxx
       </div>
     </div>`,
     };
@@ -218,34 +249,7 @@ async function sendMail({ templateName, params }) {
 }
 
 // async..await is not allowed in global scope, must use a wrapper
-async function main() {
-  // send mail with defined transport object
-  const info = await transporter.sendMail({
-    from: '"Fred Foo 👻" <foo@example.com>', // sender address
-    to: "bar@example.com, baz@example.com", // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: ` <div className="order-summary text-center">
-    <div>
-      <h3>THANK YOU</h3>
-      <p>Đơn đặt hàng của bạn đã hoàn tất.</p>
-    </div>
-    <div>
-      ORDER:&nbsp;
-      <span className="orderid highlight">{{ orderCode }}</span>
-    </div>
-    <div>Chúng tôi đã xác nhận đơn hàng của bạn.</div>
-    <div>
-      Nếu có bất kỳ thắc mắc về đơn hàng của bạn, vui lòng liên hệ
-      với chúng tôi hoặc dùng chức năng theo dõi đơn hàng
-    </div>
-  </div>`, // html body
-  });
 
-  console.log("Message sent: %s", info.messageId);
-
-  //
-}
 // add new appointment
 export const AddAppointment = async (req, res) => {
   const staffId = req.body.StaffId; // staff id
@@ -259,6 +263,7 @@ export const AddAppointment = async (req, res) => {
   const manyService = req.body.Services;
   const storeId = req.body.storeId;
   const store = await Store.findOne({ _id: storeId });
+  const service = await Service.findOne({ _id: manyService });
   console.log(store);
   if (store) {
     Staff.findOne({ _id: staffId }).then((staff) => {
@@ -285,12 +290,14 @@ export const AddAppointment = async (req, res) => {
         });
         newAppointment
           .save()
-          .then( async (appointment) => {
+          .then(async (appointment) => {
+            console.log("first", appointment);
             await sendMail({
-              params:  req.body,
-              
-            })
-            return res.status(200).json(appointment);
+              params: req.body,
+              store: store,
+              service: service,
+            });
+            return res.status(200).json({ message: "success" });
           })
 
           .catch((err) => {
@@ -302,8 +309,6 @@ export const AddAppointment = async (req, res) => {
   } else {
     return res.status(404).json({ error: "khong tim thay cua hang" });
   }
-
- 
 };
 
 // update information of Appointment
